@@ -1,0 +1,10 @@
+[package]
+name = "daily-coding-problem"
+version = "0.1.0"
+authors = ["Heftyfunseeker <niccosimone@gmail.com>"]
+edition = "2018"
+
+[lib]
+name = "dcp_utils"
+path = "src/lib.rs"
+[dependencies]
