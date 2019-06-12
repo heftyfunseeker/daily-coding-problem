@@ -161,12 +161,61 @@ fn get_anagram_start_indicies(s: &Vec<u8>, w: &String, anagram_indicies_out: &mu
 
 // 2.2
 // Generate Palindrome Pairs
-fn get_palindrome_pair_indicies(words: &Vec<String>, palindrome_pairs_out: &mut Vec<usize>) {
+fn is_palindrome(str1: &str, str2: &str) -> bool {
+    let mut full_str: String = str1.to_owned();
+    full_str.push_str(str2);
     
+    let iter1 = full_str.char_indices();
+    let iter2 = full_str.char_indices().rev();
+    
+    let iter = iter1.zip(iter2);
+    
+    iter.take_while(|&((first_index, _), (last_index, _))| { first_index < last_index })
+        .all(|((_, first_char), (_, last_char))| { first_char == last_char })
+}
+
+fn get_palindrome_pair_indicies(words: &Vec<&str>, palindrome_pairs_out: &mut Vec<(usize, usize)>) {
+   for i in 0..words.len() {
+       for j in (i + 1)..words.len() {
+           if is_palindrome(&words[i], &words[j]) {
+               palindrome_pairs_out.push((i,j));
+           }
+           if is_palindrome(&words[j], &words[i]) {
+               palindrome_pairs_out.push((j,i));
+           }
+       }
+   }
+}
+
+// 2.3 zig zag
+fn print_zig_zag(word: &str, k: i32) {
+    let bytes = word.as_bytes();
+    for leading_space in 0..k {
+        for _ in 0..leading_space {
+            print!(" ");
+        }
+        let mut index = leading_space as usize;
+        while index < bytes.len() {
+            let is_ascending = ((index as i32) % ((k - 1) * 2)) >= k - 1;
+            let spaces: i32;
+            if is_ascending {
+                spaces = leading_space * 2 - 1;
+            }
+            else {
+                spaces = ((k * 2) - 3) - leading_space * 2;
+            }
+            print!("{}", bytes[index] as char);
+            for _ in 0..spaces {
+                print!(" ");
+            }
+            index += (spaces + 1) as usize;
+        }
+        println!("");
+    }
 }
 
 fn main() {
-    println!("Hello, world!");
+    print_zig_zag("thisisanotherzigzag", 5);
 }
 
 #[cfg(test)]
@@ -257,5 +306,20 @@ mod tests {
         assert_eq!(out[0], 0);
         assert_eq!(out[1], 3);
         assert_eq!(out[2], 4);
+    }
+    
+    #[test]
+    fn test_2_2() {
+        assert!(super::is_palindrome("code", "edoc"));
+        assert!(!super::is_palindrome("code", "eoc"));
+        assert!(!super::is_palindrome("dea", "d"));
+        
+        let words = vec!["code", "edoc", "da", "d", "ad"];
+        let valid_pairs = vec![(0,1), (1, 0), (2,3), (2, 4), (4,2), (3,4)];
+        
+        let mut pairs = Vec::new();
+        super::get_palindrome_pair_indicies(&words, &mut pairs);
+        
+        assert_eq!(pairs, valid_pairs);
     }
 }
